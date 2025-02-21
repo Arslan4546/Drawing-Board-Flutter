@@ -1,13 +1,13 @@
-import 'package:drawing_board/arrow_data.dart';
-import 'package:drawing_board/color_button.dart';
-import 'package:drawing_board/drawing_painter.dart';
-import 'package:drawing_board/shape_button.dart';
-import 'package:drawing_board/shape_data.dart';
-import 'package:drawing_board/stroke.dart';
-import 'package:drawing_board/stroke_button.dart';
-import 'package:drawing_board/text_data.dart';
-import 'package:drawing_board/tool_bar_button.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_drawing_board/arrow_data.dart';
+import 'package:flutter_drawing_board/color_button.dart';
+import 'package:flutter_drawing_board/drawing_painter.dart';
+import 'package:flutter_drawing_board/shape_button.dart';
+import 'package:flutter_drawing_board/shape_data.dart';
+import 'package:flutter_drawing_board/stroke.dart';
+import 'package:flutter_drawing_board/stroke_button.dart';
+import 'package:flutter_drawing_board/text_data.dart';
+import 'package:flutter_drawing_board/tool_bar_button.dart';
 
 class DrawingBoardUI extends StatefulWidget {
   @override

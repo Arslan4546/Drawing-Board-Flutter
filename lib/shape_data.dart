@@ -1,5 +1,5 @@
-import 'package:drawing_board/drawing_board_ui.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_drawing_board/drawing_board_ui.dart';
 
 class ShapeData {
   ShapeType shapeType;

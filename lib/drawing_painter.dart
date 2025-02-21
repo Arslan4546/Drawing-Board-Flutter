@@ -1,9 +1,9 @@
-import 'package:drawing_board/arrow_data.dart';
-import 'package:drawing_board/drawing_board_ui.dart';
-import 'package:drawing_board/shape_data.dart';
-import 'package:drawing_board/stroke.dart';
-import 'package:drawing_board/text_data.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_drawing_board/arrow_data.dart';
+import 'package:flutter_drawing_board/drawing_board_ui.dart';
+import 'package:flutter_drawing_board/shape_data.dart';
+import 'package:flutter_drawing_board/stroke.dart';
+import 'package:flutter_drawing_board/text_data.dart';
 
 class DrawingPainter extends CustomPainter {
   List<Stroke> strokes;
