@@ -8,24 +8,26 @@ class StrokeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.black,
-            child: Text(
-              label,
-              style: TextStyle(color: Colors.white, fontSize: 12),
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.black),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-          ),
-        ],
+        ),
       ),
     );
   }

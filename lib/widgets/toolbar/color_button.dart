@@ -8,20 +8,19 @@ class ColorButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return InkWell(
       onTap: onTap,
-      child: Column(
-        children: [
-          CircleAvatar(
-            radius: 20,
-            backgroundColor: color,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: Colors.white,
+            width: 2,
           ),
-          SizedBox(height: 4),
-          Text(
-            color.toString().split('(0x')[1].split(')')[0],
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-          ),
-        ],
+        ),
       ),
     );
   }

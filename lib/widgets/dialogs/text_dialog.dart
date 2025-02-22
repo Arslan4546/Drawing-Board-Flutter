@@ -1,25 +1,103 @@
 import 'package:flutter/material.dart';
+import '../../models/text_data.dart';
 
-class TextDialog extends StatelessWidget {
-  final TextEditingController controller;
-  final VoidCallback onAdd;
+void showTextDialog(
+    BuildContext context, Offset position, Function(Offset, String) addText,
+    {required Function setState, required bool isTextDialogActive}) {
+  TextEditingController controller = TextEditingController();
 
-  TextDialog({required this.controller, required this.onAdd});
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text("Enter Text"),
-      content: TextField(
-        controller: controller,
-        decoration: InputDecoration(hintText: "Type something..."),
-      ),
-      actions: [
-        TextButton(
-          onPressed: onAdd,
-          child: Text("Add"),
+  showDialog(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        elevation: 8,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
         ),
-      ],
-    );
-  }
+        backgroundColor: Theme.of(context).brightness == Brightness.light
+            ? Colors.white
+            : Colors.grey[900],
+        child: Container(
+          padding: EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 10,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                "Add Text to Canvas",
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.black87
+                      : Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              TextField(
+                controller: controller,
+                decoration: InputDecoration(
+                  hintText: "Type your text here...",
+                  hintStyle: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.light
+                        ? Colors.grey[500]
+                        : Colors.grey[400],
+                  ),
+                ).applyDefaults(Theme.of(context).inputDecorationTheme),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Theme.of(context).brightness == Brightness.light
+                      ? Colors.black87
+                      : Colors.white,
+                ),
+                maxLines: 3,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  if (controller.text.isNotEmpty) {
+                    addText(position, controller.text);
+                    Navigator.pop(context);
+                    setState(() {
+                      isTextDialogActive = false;
+                    });
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).primaryColor,
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                child: Text(
+                  "Place Your Text",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  ).then((_) {
+    setState(() {
+      isTextDialogActive = false;
+    });
+  });
 }

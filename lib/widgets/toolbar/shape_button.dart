@@ -9,19 +9,28 @@ class ShapeButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
+    return InkWell(
       onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12.0),
-        child: Column(
-          children: [
-            Icon(icon, size: 30, color: Colors.black),
-            SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
-            ),
-          ],
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color:
+              Colors.white, // White background for consistency in both themes
+          border:
+              Border.all(color: isDarkMode ? Colors.grey[600]! : Colors.black),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Icon(
+            icon,
+            size: 24,
+            color: isDarkMode
+                ? Colors.black
+                : Colors.black87, // Black in dark mode, black87 in light mode
+          ),
         ),
       ),
     );
