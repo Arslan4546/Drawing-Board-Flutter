@@ -6,6 +6,8 @@ void main() {
 }
 
 class MyApp extends StatefulWidget {
+  const MyApp({super.key});
+
   @override
   State<MyApp> createState() => MyAppState();
 }
@@ -25,17 +27,19 @@ class MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       theme: ThemeData.light().copyWith(
         primaryColor:
-            Color(0xFF4A90E2), // Bright blue for app bar (light theme)
-        scaffoldBackgroundColor: Color(0xFFF7F9FC), // Very light grey-blue
-        textTheme: TextTheme(
+            const Color(0xFF4A90E2), // Bright blue for app bar (light theme)
+        scaffoldBackgroundColor:
+            const Color(0xFFF7F9FC), // Very light grey-blue
+        textTheme: const TextTheme(
           bodyMedium: TextStyle(color: Colors.black87),
         ),
-        iconTheme: IconThemeData(color: Colors.black87), // Icons in light mode
-        buttonTheme: ButtonThemeData(
+        iconTheme:
+            const IconThemeData(color: Colors.black87), // Icons in light mode
+        buttonTheme: const ButtonThemeData(
           buttonColor: Colors.white,
           textTheme: ButtonTextTheme.normal,
         ),
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF4A90E2), // Match primary color
           titleTextStyle:
               TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -44,7 +48,7 @@ class MyAppState extends State<MyApp> {
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             foregroundColor: Colors.white, // Button text/icon color
-            backgroundColor: Color(0xFF4A90E2), // Bright blue for buttons
+            backgroundColor: const Color(0xFF4A90E2), // Bright blue for buttons
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
@@ -60,23 +64,24 @@ class MyAppState extends State<MyApp> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8),
-            borderSide: BorderSide(color: Color(0xFF4A90E2)),
+            borderSide: const BorderSide(color: Color(0xFF4A90E2)),
           ),
           hintStyle: TextStyle(color: Colors.grey[500]),
         ),
       ),
       darkTheme: ThemeData.dark().copyWith(
-        primaryColor: Color(0xFF1A2526), // Deep teal (dark theme)
-        scaffoldBackgroundColor: Color(0xFF121212), // Deep grey
-        textTheme: TextTheme(
+        primaryColor: const Color(0xFF1A2526), // Deep teal (dark theme)
+        scaffoldBackgroundColor: const Color(0xFF121212), // Deep grey
+        textTheme: const TextTheme(
           bodyMedium: TextStyle(color: Colors.white70),
         ),
-        iconTheme: IconThemeData(color: Colors.white70), // Icons in dark mode
+        iconTheme:
+            const IconThemeData(color: Colors.white70), // Icons in dark mode
         buttonTheme: ButtonThemeData(
           buttonColor: Colors.grey[800],
           textTheme: ButtonTextTheme.normal,
         ),
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF1A2526), // Match primary color
           titleTextStyle:
               TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -85,7 +90,7 @@ class MyAppState extends State<MyApp> {
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
             foregroundColor: Colors.white, // Button text/icon color
-            backgroundColor: Color(0xFF2D4A52), // Subtle teal for buttons
+            backgroundColor: const Color(0xFF2D4A52), // Subtle teal for buttons
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
