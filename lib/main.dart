@@ -1,21 +1,20 @@
-import 'package:drawing_board/drawing_board_ui.dart';
 import 'package:flutter/material.dart';
+import 'screens/drawing_board_screen.dart';
 
 void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  @override
-  _MyAppState createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
+class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: DrawingBoardUI(),
+      theme: ThemeData(
+        primaryColor: Color(0xFF2C3E50),
+        scaffoldBackgroundColor: Color(0xFFF5F6FA),
+      ),
+      home: DrawingBoardScreen(),
     );
   }
 }

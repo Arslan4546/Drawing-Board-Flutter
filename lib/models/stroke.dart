@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class Stroke {
-  List<Offset> points;
-  Color color;
-  double strokeWidth;
+  final List<Offset> points;
+  final Color color;
+  final double strokeWidth;
 
   Stroke({
     required this.points,

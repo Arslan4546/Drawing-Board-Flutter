@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_drawing_board/arrow_data.dart';
-import 'package:flutter_drawing_board/drawing_board_ui.dart';
-import 'package:flutter_drawing_board/shape_data.dart';
-import 'package:flutter_drawing_board/stroke.dart';
-import 'package:flutter_drawing_board/text_data.dart';
+import '../models/stroke.dart';
+import '../models/text_data.dart';
+import '../models/arrow_data.dart';
+import '../models/shape_data.dart';
+import '../models/shape_type.dart';
 
 class DrawingPainter extends CustomPainter {
   List<Stroke> strokes;
@@ -52,11 +52,8 @@ class DrawingPainter extends CustomPainter {
         ..strokeCap = StrokeCap.round;
 
       for (int i = 0; i < currentStrokePoints.length - 1; i++) {
-        if (currentStrokePoints[i] != null &&
-            currentStrokePoints[i + 1] != null) {
-          canvas.drawLine(
-              currentStrokePoints[i], currentStrokePoints[i + 1], currentPaint);
-        }
+        canvas.drawLine(
+            currentStrokePoints[i], currentStrokePoints[i + 1], currentPaint);
       }
     }
 

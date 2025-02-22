@@ -17,8 +17,10 @@ class ColorButton extends StatelessWidget {
             backgroundColor: color,
           ),
           SizedBox(height: 4),
-          Text(color.toString().split('(0x')[1].split(')')[0],
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          Text(
+            color.toString().split('(0x')[1].split(')')[0],
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );

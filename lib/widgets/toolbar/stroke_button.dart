@@ -15,12 +15,16 @@ class StrokeButton extends StatelessWidget {
           CircleAvatar(
             radius: 20,
             backgroundColor: Colors.black,
-            child: Text(label,
-                style: TextStyle(color: Colors.white, fontSize: 12)),
+            child: Text(
+              label,
+              style: TextStyle(color: Colors.white, fontSize: 12),
+            ),
           ),
           SizedBox(height: 4),
-          Text(label,
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+          Text(
+            label,
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+          ),
         ],
       ),
     );
