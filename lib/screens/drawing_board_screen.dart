@@ -1,4 +1,9 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:html' as html; // Import html for web
 import '../main.dart';
 import '../models/stroke.dart';
 import '../models/text_data.dart';
@@ -8,7 +13,6 @@ import '../models/shape_type.dart';
 import '../models/drawing_action.dart';
 import '../painters/drawing_painter.dart';
 import '../utils/responsive_utils.dart';
-import '../widgets/toolbar/toolbar_button.dart';
 import '../widgets/toolbar/color_button.dart';
 import '../widgets/toolbar/stroke_button.dart';
 import '../widgets/toolbar/shape_button.dart';
@@ -54,6 +58,9 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
   late double strokeWidth;
   late double spacing;
 
+  final ScreenshotController _screenshotController =
+      ScreenshotController(); // Use ScreenshotController for compatibility
+
   @override
   void initState() {
     super.initState();
@@ -98,7 +105,7 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
         isShapeActive = false;
         isArrowActive = false;
       }
-      // Do not reset drawing tool states for stroke, color, text, or clear
+      // Do not reset drawing tool states for stroke, color, text, screenshot, or clear
       isStrokeActive = bar == 'stroke';
       isColorActive = bar == 'color';
 
@@ -125,6 +132,9 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
         case 'arrow':
           isArrowActive = true;
           activeBar = 'arrow';
+          break;
+        case 'screenshot':
+          _takeScreenshot(); // Handle screenshot action
           break;
         case 'clear':
           clearDrawing();
@@ -366,50 +376,109 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
     });
   }
 
+  Future<void> _takeScreenshot() async {
+    try {
+      // Capture the screenshot of the entire widget tree
+      final image = await _screenshotController.capture(
+        pixelRatio: 1.0, // Adjust for quality if needed
+      );
+
+      // Get the appropriate directory for saving
+      Directory? directory;
+      String fileName =
+          'drawing_screenshot_${DateTime.now().millisecondsSinceEpoch}.png';
+
+      if (kIsWeb) {
+        // On web, prompt user to download the image
+        final blob = html.Blob([image]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute('download', fileName)
+          ..click();
+        html.Url.revokeObjectUrl(url);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Screenshot downloaded as $fileName')),
+        );
+        return; // Exit early for web
+      } else if (Platform.isAndroid || Platform.isIOS) {
+        // On mobile devices, save to the Pictures directory
+        directory =
+            await getExternalStorageDirectory(); // Use Pictures directory for mobile
+        if (directory == null) {
+          directory = await getApplicationDocumentsDirectory();
+        }
+      } else if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
+        // On desktop (emulator, Chrome, or laptop), save to Documents directory
+        directory = await getApplicationDocumentsDirectory();
+      } else if (Platform.isFuchsia) {
+        // Handle Fuchsia if needed (optional)
+        directory = await getApplicationDocumentsDirectory();
+      }
+
+      if (directory != null) {
+        final filePath = '${directory.path}/$fileName';
+        final file = File(filePath);
+        await file.writeAsBytes(image!);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Screenshot saved to $filePath')),
+        );
+      } else {
+        throw Exception(
+            'Could not find a suitable directory to save the screenshot.');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to take screenshot: $e')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     _updateResponsiveValues(context);
     final isPortrait =
         MediaQuery.of(context).orientation == Orientation.portrait;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          "Drawing Board",
-          style: TextStyle(
-            color: isDarkMode
-                ? Colors.white
-                : Colors.white, // White in both themes for consistency
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: isDarkMode
-            ? const Color(0xFF1A2526)
-            : const Color(
-                0xFF4A90E2), // Bright blue in light, deep teal in dark
-        elevation: 4,
-        actions: [
-          IconButton(
-            icon: Icon(
-              isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              color: isDarkMode ? Colors.yellow : Colors.white,
+    return Screenshot(
+      controller: _screenshotController,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            "Drawing Board",
+            style: TextStyle(
+              color: isDarkMode
+                  ? Colors.white
+                  : Colors.white, // White in both themes for consistency
+              fontWeight: FontWeight.bold,
             ),
-            onPressed: toggleTheme,
           ),
-        ],
-      ),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Stack(
-              children: [
-                _buildMainLayout(constraints, isPortrait),
-                if (activeBar != null &&
-                    ['stroke', 'color', 'shape'].contains(activeBar!))
-                  _buildToolOptions(activeBar!, constraints, isPortrait),
-              ],
-            );
-          },
+          backgroundColor: isDarkMode
+              ? Color(0xFF1A2526)
+              : Color(0xFF4A90E2), // Bright blue in light, deep teal in dark
+          elevation: 4,
+          actions: [
+            IconButton(
+              icon: Icon(
+                isDarkMode ? Icons.light_mode : Icons.dark_mode,
+                color: isDarkMode ? Colors.yellow : Colors.white,
+              ),
+              onPressed: toggleTheme,
+            ),
+          ],
+        ),
+        body: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              return Stack(
+                children: [
+                  _buildMainLayout(constraints, isPortrait),
+                  if (activeBar != null &&
+                      ['stroke', 'color', 'shape'].contains(activeBar!))
+                    _buildToolOptions(activeBar!, constraints, isPortrait),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );
@@ -428,9 +497,8 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
           width: toolbarWidth,
           height: constraints.maxHeight,
           color: isDarkMode
-              ? const Color(0xFF1A2526)
-              : const Color(
-                  0xFFF7F9FC), // Light grey in light, deep grey in dark
+              ? Color(0xFF1A2526)
+              : Color(0xFFF7F9FC), // Light grey in light, deep grey in dark
           child: _buildToolbar(false, constraints),
         ),
         Expanded(
@@ -446,9 +514,8 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
         Container(
           width: toolbarWidth,
           color: isDarkMode
-              ? const Color(0xFF1A2526)
-              : const Color(
-                  0xFFF7F9FC), // Light grey in light, deep grey in dark
+              ? Color(0xFF1A2526)
+              : Color(0xFFF7F9FC), // Light grey in light, deep grey in dark
           child: _buildToolbar(false, constraints),
         ),
         Expanded(
@@ -481,6 +548,8 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
       _buildToolbarButton(Icons.palette, "Color", 'color'),
       _buildToolbarButton(Icons.text_fields, "Text", 'text'),
       _buildToolbarButton(Icons.arrow_forward, "Arrow", 'arrow'),
+      _buildToolbarButton(Icons.camera_alt, "Screenshot",
+          'screenshot'), // New screenshot button
       UndoButton(onTap: undo, isEnabled: undoStack.isNotEmpty),
       RedoButton(onTap: redo, isEnabled: redoStack.isNotEmpty),
       _buildToolbarButton(Icons.clear, "Clear", 'clear'),
@@ -491,10 +560,10 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
     final bool isActive = activeBar == value;
     final Color iconColor = isDarkMode
         ? (isActive ? Colors.white : Colors.white70)
-        : (isActive ? const Color(0xFF4A90E2) : Colors.black87);
+        : (isActive ? Color(0xFF4A90E2) : Colors.black87);
     final Color textColor = isDarkMode
         ? (isActive ? Colors.white : Colors.white70)
-        : (isActive ? const Color(0xFF4A90E2) : Colors.black87);
+        : (isActive ? Color(0xFF4A90E2) : Colors.black87);
 
     return GestureDetector(
       onTap: () => value == 'clear' ? clearDrawing() : toggleBar(value),
@@ -504,8 +573,8 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
         decoration: BoxDecoration(
           color: isActive
               ? (isDarkMode
-                  ? const Color(0xFF2D4A52)
-                  : const Color(0xFF4A90E2).withOpacity(0.2))
+                  ? Color(0xFF2D4A52)
+                  : Color(0xFF4A90E2).withOpacity(0.2))
               : Colors.transparent,
           border: Border(
             bottom: BorderSide(
@@ -541,7 +610,7 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
   Widget _buildToolOptions(
       String type, BoxConstraints constraints, bool isPortrait) {
     if (!['stroke', 'color', 'shape'].contains(type)) {
-      return const SizedBox.shrink();
+      return SizedBox.shrink();
     }
 
     return Positioned(
@@ -551,18 +620,18 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
       child: Container(
         height: 60,
         color: isDarkMode
-            ? const Color(0xFF1A2526).withOpacity(0.1)
-            : const Color(0xFFF7F9FC), // Flat background, no shadow
+            ? Color(0xFF1A2526).withOpacity(0.1)
+            : Color(0xFFF7F9FC), // Flat background, no shadow
         child: Center(
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: _buildOptionsForType(type).map((widget) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 8),
                     child: widget,
                   );
                 }).toList(),
@@ -673,7 +742,7 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
                 });
               },
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: textData.isDragging || textData.isSelected
                       ? (isDarkMode
@@ -692,7 +761,7 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
               ),
             ),
           );
-        }),
+        }).toList(),
       ],
     );
   }

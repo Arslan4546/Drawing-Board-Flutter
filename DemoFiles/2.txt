@@ -1,0 +1,1230 @@
+import 'package:flutter/material.dart';
+
+// ShapeType enum definition
+enum ShapeType { rectangle, circle, line, triangle }
+
+// Stroke class definition (was missing)
+class Stroke {
+  final List<Offset> points;
+  final Color color;
+  final double strokeWidth;
+
+  Stroke({
+    required this.points,
+    required this.color,
+    required this.strokeWidth,
+  });
+}
+
+// TextData class
+class TextData {
+  String text;
+  Offset position;
+  Color color;
+  bool isDragging;
+  bool isSelected; // Add this field
+
+  TextData({
+    required this.text,
+    required this.position,
+    required this.color,
+    this.isDragging = false,
+    this.isSelected = false, // Initialize as false
+  });
+}
+
+// ArrowData class
+class ArrowData {
+  Offset start;
+  Offset end;
+  Color color;
+  double strokeWidth;
+
+  ArrowData({
+    required this.start,
+    required this.end,
+    required this.color,
+    required this.strokeWidth,
+  });
+}
+
+// ShapeData class
+class ShapeData {
+  ShapeType shapeType;
+  Offset start;
+  Offset end;
+  Color color;
+  double strokeWidth;
+
+  ShapeData({
+    required this.shapeType,
+    required this.start,
+    required this.end,
+    required this.color,
+    required this.strokeWidth,
+  });
+}
+
+// ToolbarButton widget
+class ToolbarButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+
+  ToolbarButton({required this.icon, required this.label, this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12.0),
+        child: Column(
+          children: [
+            Icon(icon, size: 30, color: Colors.black),
+            SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ColorButton widget
+class ColorButton extends StatelessWidget {
+  final Color color;
+  final VoidCallback onTap;
+
+  ColorButton({required this.color, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: Colors.white,
+            width: 2,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// StrokeButton widget
+class StrokeButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  StrokeButton({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.black),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ShapeButton widget
+class ShapeButton extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  ShapeButton({required this.icon, required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          border: Border.all(color: Colors.black),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Center(
+          child: Icon(icon, size: 24),
+        ),
+      ),
+    );
+  }
+}
+
+// DrawingPainter class
+class DrawingPainter extends CustomPainter {
+  List<Stroke> strokes;
+  List<Offset> currentStrokePoints;
+  Color currentColor;
+  double currentStrokeWidth;
+  List<TextData> texts;
+  List<ArrowData> arrows;
+  List<ShapeData> shapes;
+  Offset? shapeStart;
+  Offset? shapeEnd;
+  ShapeType? selectedShape;
+
+  DrawingPainter({
+    required this.strokes,
+    required this.currentStrokePoints,
+    required this.currentColor,
+    required this.currentStrokeWidth,
+    required this.texts,
+    required this.arrows,
+    required this.shapes,
+    this.shapeStart,
+    this.shapeEnd,
+    this.selectedShape,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (var stroke in strokes) {
+      Paint paint = Paint()
+        ..color = stroke.color
+        ..strokeWidth = stroke.strokeWidth
+        ..strokeCap = StrokeCap.round;
+
+      for (int i = 0; i < stroke.points.length - 1; i++) {
+        // ignore: unnecessary_null_comparison
+        if (stroke.points[i] != null && stroke.points[i + 1] != null) {
+          canvas.drawLine(stroke.points[i], stroke.points[i + 1], paint);
+        }
+      }
+    }
+
+    if (currentStrokePoints.isNotEmpty) {
+      Paint currentPaint = Paint()
+        ..color = currentColor
+        ..strokeWidth = currentStrokeWidth
+        ..strokeCap = StrokeCap.round;
+
+      for (int i = 0; i < currentStrokePoints.length - 1; i++) {
+        canvas.drawLine(
+            currentStrokePoints[i], currentStrokePoints[i + 1], currentPaint);
+      }
+    }
+
+    for (var textData in texts) {
+      TextPainter textPainter = TextPainter(
+        text: TextSpan(
+          text: textData.text,
+          style: TextStyle(
+            color: textData.color,
+            fontSize: 24,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      );
+      textPainter.layout();
+      textPainter.paint(canvas, textData.position);
+    }
+
+    for (var arrow in arrows) {
+      Paint arrowPaint = Paint()
+        ..color = arrow.color
+        ..strokeWidth = arrow.strokeWidth
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawLine(arrow.start, arrow.end, arrowPaint);
+
+      double angle = (arrow.end - arrow.start).direction;
+      double arrowheadLength = 15.0;
+      canvas.save();
+      canvas.translate(arrow.end.dx, arrow.end.dy);
+      canvas.rotate(angle);
+      canvas.drawPath(
+        Path()
+          ..moveTo(0, 0)
+          ..lineTo(-arrowheadLength, -arrowheadLength / 2)
+          ..lineTo(-arrowheadLength, arrowheadLength / 2)
+          ..close(),
+        arrowPaint,
+      );
+      canvas.restore();
+    }
+
+    for (var shape in shapes) {
+      Paint shapePaint = Paint()
+        ..color = shape.color
+        ..strokeWidth = shape.strokeWidth
+        ..style = PaintingStyle.stroke;
+
+      switch (shape.shapeType) {
+        case ShapeType.rectangle:
+          canvas.drawRect(Rect.fromPoints(shape.start, shape.end), shapePaint);
+          break;
+        case ShapeType.circle:
+          double radius = (shape.end - shape.start).distance / 2;
+          canvas.drawCircle(
+              Offset((shape.start.dx + shape.end.dx) / 2,
+                  (shape.start.dy + shape.end.dy) / 2),
+              radius,
+              shapePaint);
+          break;
+        case ShapeType.line:
+          canvas.drawLine(shape.start, shape.end, shapePaint);
+          break;
+        case ShapeType.triangle:
+          Path trianglePath = Path()
+            ..moveTo(shape.start.dx, shape.end.dy)
+            ..lineTo(shape.end.dx, shape.end.dy)
+            ..lineTo((shape.start.dx + shape.end.dx) / 2, shape.start.dy)
+            ..close();
+          canvas.drawPath(trianglePath, shapePaint);
+          break;
+      }
+    }
+
+    if (shapeStart != null && shapeEnd != null && selectedShape != null) {
+      Paint tempShapePaint = Paint()
+        ..color = currentColor
+        ..strokeWidth = currentStrokeWidth
+        ..style = PaintingStyle.stroke;
+
+      switch (selectedShape!) {
+        case ShapeType.rectangle:
+          canvas.drawRect(
+              Rect.fromPoints(shapeStart!, shapeEnd!), tempShapePaint);
+          break;
+        case ShapeType.circle:
+          double radius = (shapeEnd! - shapeStart!).distance / 2;
+          canvas.drawCircle(
+              Offset((shapeStart!.dx + shapeEnd!.dx) / 2,
+                  (shapeStart!.dy + shapeEnd!.dy) / 2),
+              radius,
+              tempShapePaint);
+          break;
+        case ShapeType.line:
+          canvas.drawLine(shapeStart!, shapeEnd!, tempShapePaint);
+          break;
+        case ShapeType.triangle:
+          Path trianglePath = Path()
+            ..moveTo(shapeStart!.dx, shapeEnd!.dy)
+            ..lineTo(shapeEnd!.dx, shapeEnd!.dy)
+            ..lineTo((shapeStart!.dx + shapeEnd!.dx) / 2, shapeStart!.dy)
+            ..close();
+          canvas.drawPath(trianglePath, tempShapePaint);
+          break;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) {
+    return true;
+  }
+}
+
+// Main DrawingBoardUI widget
+class DrawingBoardUI extends StatefulWidget {
+  @override
+  _DrawingBoardUIState createState() => _DrawingBoardUIState();
+}
+
+class _DrawingBoardUIState extends State<DrawingBoardUI> {
+  // Add new variables to track active states
+  String? activeBar = 'pen'; // Set pen as default active tool
+  bool isPenActive = true;
+  bool isShapeActive = false;
+  bool isStrokeActive = false;
+  bool isColorActive = false;
+
+  List<Stroke> strokes = [];
+  List<Offset> currentStrokePoints = [];
+  bool isDrawing = false;
+  double currentStrokeWidth = 4.0;
+  Color currentColor = Colors.black;
+  List<TextData> texts = [];
+  List<ArrowData> arrows = [];
+  List<ShapeData> shapes = [];
+  ShapeType? selectedShape;
+  Offset? shapeStart;
+  Offset? shapeEnd;
+
+  late double toolbarWidth;
+  late double iconSize;
+  late double bottomBarHeight;
+  late double strokeWidth;
+  late double spacing;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeResponsiveValues();
+  }
+
+  void _initializeResponsiveValues() {
+    toolbarWidth = 80;
+    iconSize = 30;
+    bottomBarHeight = 80;
+    strokeWidth = 4.0;
+    spacing = 8.0;
+  }
+
+  void _updateResponsiveValues(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final isSmallScreen = screenSize.width < 600;
+    final isTablet = screenSize.width >= 600 && screenSize.width < 1200;
+
+    setState(() {
+      if (isSmallScreen) {
+        toolbarWidth = screenSize.width * 0.15; // 15% of screen width
+        iconSize = 24; // Consistent icon size
+        bottomBarHeight = 60;
+        strokeWidth = 3.0;
+        spacing = 4.0;
+      } else if (isTablet) {
+        toolbarWidth = screenSize.width * 0.12; // 12% of screen width
+        iconSize = 28;
+        bottomBarHeight = 70;
+        strokeWidth = 4.0;
+        spacing = 6.0;
+      } else {
+        toolbarWidth = screenSize.width * 0.1; // 10% of screen width
+        iconSize = 32;
+        bottomBarHeight = 80;
+        strokeWidth = 5.0;
+        spacing = 8.0;
+      }
+    });
+  }
+
+  void toggleBar(String bar) {
+    setState(() {
+      // Update active states based on the selected tool
+      switch (bar) {
+        case 'pen':
+          isPenActive = true;
+          activeBar = 'pen';
+          break;
+        case 'shape':
+          isShapeActive = true;
+          activeBar = 'shape';
+          break;
+        case 'stroke':
+          // Don't change active tool, just show stroke options
+          activeBar = 'stroke';
+          isStrokeActive = true;
+          break;
+        case 'color':
+          // Don't change active tool, just show color options
+          activeBar = 'color';
+          isColorActive = true;
+          break;
+        case 'text':
+          activeBar = 'text';
+          break;
+        case 'arrow':
+          activeBar = 'arrow';
+          break;
+        case 'clear':
+          clearDrawing();
+          break;
+      }
+    });
+  }
+
+  void selectShape(ShapeType shape) {
+    setState(() {
+      selectedShape = shape;
+      isShapeActive = true;
+      isPenActive = false;
+      activeBar = 'shape';
+      // Color and stroke width are maintained from previous selections
+    });
+  }
+
+  void startDrawing(Offset point) {
+    setState(() {
+      isDrawing = true;
+      if (activeBar == 'pen') {
+        currentStrokePoints = [];
+        currentStrokePoints.add(point);
+      } else if (activeBar == 'shape') {
+        shapeStart = point;
+        shapeEnd = point;
+      } else if (activeBar == 'arrow') {
+        currentStrokePoints = [];
+        currentStrokePoints.add(point);
+      }
+    });
+  }
+
+  void updateDrawing(Offset point) {
+    if (isDrawing) {
+      setState(() {
+        if (activeBar == 'pen') {
+          currentStrokePoints.add(point);
+        } else if (activeBar == 'shape') {
+          shapeEnd = point;
+        } else if (activeBar == 'arrow') {
+          currentStrokePoints.add(point);
+        }
+      });
+    }
+  }
+
+  void stopDrawing() {
+    setState(() {
+      isDrawing = false;
+
+      if (activeBar == 'pen') {
+        strokes.add(Stroke(
+          points: List.from(currentStrokePoints),
+          color: currentColor,
+          strokeWidth: currentStrokeWidth,
+        ));
+        currentStrokePoints.clear();
+      } else if (activeBar == 'shape' &&
+          shapeStart != null &&
+          shapeEnd != null) {
+        shapes.add(ShapeData(
+          shapeType: selectedShape!,
+          start: shapeStart!,
+          end: shapeEnd!,
+          color: currentColor,
+          strokeWidth: currentStrokeWidth,
+        ));
+        shapeStart = null;
+        shapeEnd = null;
+      } else if (activeBar == 'arrow') {
+        if (currentStrokePoints.length >= 2) {
+          addArrow(
+            currentStrokePoints.first,
+            currentStrokePoints.last,
+          );
+          currentStrokePoints.clear();
+        }
+      }
+    });
+  }
+
+  void clearDrawing() {
+    setState(() {
+      strokes.clear();
+      texts.clear();
+      arrows.clear();
+      shapes.clear();
+    });
+  }
+
+  void setStrokeWidth(double width) {
+    setState(() {
+      currentStrokeWidth = width;
+      // Keep previous active tool
+      activeBar = isPenActive
+          ? 'pen'
+          : isShapeActive
+              ? 'shape'
+              : activeBar;
+      isStrokeActive = false;
+    });
+  }
+
+  void setColor(Color color) {
+    setState(() {
+      currentColor = color;
+      // Keep previous active tool
+      activeBar = isPenActive
+          ? 'pen'
+          : isShapeActive
+              ? 'shape'
+              : activeBar;
+      isColorActive = false;
+    });
+  }
+
+  void addText(Offset position, String text) {
+    setState(() {
+      texts.add(TextData(
+        text: text,
+        position: position,
+        color: currentColor,
+      ));
+    });
+  }
+
+  void addArrow(Offset start, Offset end) {
+    setState(() {
+      arrows.add(ArrowData(
+        start: start,
+        end: end,
+        color: currentColor,
+        strokeWidth: currentStrokeWidth,
+      ));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _updateResponsiveValues(context);
+    final screenSize = MediaQuery.of(context).size;
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+
+    return Scaffold(
+      body: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Stack(
+              children: [
+                _buildMainLayout(constraints, isPortrait),
+                // Only show tool options if activeBar is one of the types with options
+                if (activeBar != null &&
+                    ['stroke', 'color', 'shape'].contains(activeBar!))
+                  _buildToolOptions(activeBar!, constraints, isPortrait),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainLayout(BoxConstraints constraints, bool isPortrait) {
+    return isPortrait
+        ? _buildPortraitLayout(constraints)
+        : _buildLandscapeLayout(constraints);
+  }
+
+  Widget _buildPortraitLayout(BoxConstraints constraints) {
+    return Row(
+      // Changed from Column to Row
+      children: [
+        Container(
+          width: toolbarWidth, // Use width instead of height
+          height: constraints.maxHeight,
+          child: _buildToolbar(false, constraints), // Set isPortrait to false
+        ),
+        Expanded(
+          child: _buildCanvas(constraints),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLandscapeLayout(BoxConstraints constraints) {
+    return Row(
+      children: [
+        Container(
+          width: toolbarWidth,
+          child: _buildToolbar(false, constraints),
+        ),
+        Expanded(
+          child: _buildCanvas(constraints),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildToolbar(bool isLandscape, BoxConstraints constraints) {
+    return Container(
+      color: Theme.of(context).primaryColor.withOpacity(0.1),
+      width: toolbarWidth,
+      child: Column(
+        // Always use Column for vertical layout
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: _buildToolbarButtons(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildToolbarButtons() {
+    return [
+      _buildToolbarButton(Icons.brush, "Pen", 'pen'),
+      _buildToolbarButton(Icons.crop_square, "Shape", 'shape'),
+      _buildToolbarButton(Icons.circle, "Stroke", 'stroke'),
+      _buildToolbarButton(Icons.palette, "Color", 'color'),
+      _buildToolbarButton(Icons.text_fields, "Text", 'text'),
+      _buildToolbarButton(Icons.arrow_forward, "Arrow", 'arrow'),
+      _buildToolbarButton(Icons.clear, "Clear", 'clear'),
+    ];
+  }
+
+  Widget _buildToolbarButton(IconData icon, String label, String value) {
+    final bool isActive = _isToolActive(value);
+
+    return Container(
+      width: toolbarWidth,
+      padding: EdgeInsets.symmetric(vertical: spacing),
+      decoration: BoxDecoration(
+        color: isActive
+            ? Theme.of(context).primaryColor.withOpacity(0.2)
+            : Colors.transparent,
+        border: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => value == 'clear' ? clearDrawing() : toggleBar(value),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: iconSize,
+                color: Theme.of(context).primaryColor,
+              ),
+              SizedBox(height: spacing / 2),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: iconSize * 0.4,
+                  color: Theme.of(context).primaryColor,
+                  fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Add helper method to check if tool is active
+  bool _isToolActive(String value) {
+    switch (value) {
+      case 'pen':
+        return isPenActive;
+      case 'shape':
+        return isShapeActive;
+      case 'stroke':
+        return isStrokeActive;
+      case 'color':
+        return isColorActive;
+      default:
+        return activeBar == value;
+    }
+  }
+
+  Widget _buildToolOptions(
+      String type, BoxConstraints constraints, bool isPortrait) {
+    // Only show bottom options for specific types
+    if (!['stroke', 'color', 'shape'].contains(type)) {
+      return SizedBox.shrink(); // Return empty widget for types without options
+    }
+
+    return Positioned(
+      bottom: 0,
+      left: toolbarWidth,
+      right: 0,
+      child: Container(
+        height: 60,
+        decoration: BoxDecoration(
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              spreadRadius: 1,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: _buildOptionsForType(type).map((widget) {
+                  return Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    child: widget,
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildOptionsForType(String type) {
+    switch (type) {
+      case 'stroke':
+        return [2, 4, 6, 8]
+            .map((width) => Padding(
+                  padding: EdgeInsets.symmetric(horizontal: spacing),
+                  child: StrokeButton(
+                    label: width.toString(),
+                    onTap: () => setStrokeWidth(width.toDouble()),
+                  ),
+                ))
+            .toList();
+
+      case 'color':
+        return [
+          Colors.black,
+          Colors.red,
+          Colors.blue,
+          Colors.green,
+        ]
+            .map((color) => Padding(
+                  padding: EdgeInsets.symmetric(horizontal: spacing),
+                  child: ColorButton(
+                    color: color,
+                    onTap: () => setColor(color),
+                  ),
+                ))
+            .toList();
+
+      case 'shape':
+        return [
+          (Icons.crop_square, "Rectangle", ShapeType.rectangle),
+          (Icons.circle, "Circle", ShapeType.circle),
+          (Icons.linear_scale, "Line", ShapeType.line),
+          (Icons.change_history, "Triangle", ShapeType.triangle),
+        ]
+            .map((shape) => Padding(
+                  padding: EdgeInsets.symmetric(horizontal: spacing),
+                  child: ShapeButton(
+                    icon: shape.$1,
+                    label: shape.$2,
+                    onTap: () => selectShape(shape.$3),
+                  ),
+                ))
+            .toList();
+
+      default:
+        return [];
+    }
+  }
+
+  Widget _buildCanvas(BoxConstraints constraints) {
+    return Stack(
+      children: [
+        GestureDetector(
+          onTapDown: (details) {
+            if (activeBar == 'text') {
+              _showTextDialog(details.localPosition);
+            }
+          },
+          onPanStart: (details) => _handlePanStart(details),
+          onPanUpdate: (details) => _handlePanUpdate(details),
+          onPanEnd: (details) => _handlePanEnd(details),
+          child: CustomPaint(
+            size: Size.infinite,
+            painter: DrawingPainter(
+              strokes: strokes,
+              currentStrokePoints: currentStrokePoints,
+              currentColor: currentColor,
+              currentStrokeWidth: currentStrokeWidth,
+              texts: texts,
+              arrows: arrows,
+              shapes: shapes,
+              shapeStart: shapeStart,
+              shapeEnd: shapeEnd,
+              selectedShape: selectedShape,
+            ),
+          ),
+        ),
+        // Add draggable text layers
+        ...texts.map((textData) {
+          return Positioned(
+            left: textData.position.dx,
+            top: textData.position.dy,
+            child: GestureDetector(
+              onTap: () => _showTextOptions(textData),
+              onPanStart: (_) {
+                setState(() {
+                  textData.isDragging = true;
+                });
+              },
+              onPanUpdate: (details) {
+                setState(() {
+                  textData.position = Offset(
+                    textData.position.dx + details.delta.dx,
+                    textData.position.dy + details.delta.dy,
+                  );
+                });
+              },
+              onPanEnd: (_) {
+                setState(() {
+                  textData.isDragging = false;
+                });
+              },
+              child: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: textData.isDragging || textData.isSelected
+                      ? Colors.black.withOpacity(0.1)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  textData.text,
+                  style: TextStyle(
+                    color: textData.color,
+                    fontSize: 24,
+                  ),
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  void _handlePanStart(DragStartDetails details) {
+    if (activeBar == 'pen' || activeBar == 'shape' || activeBar == 'arrow') {
+      startDrawing(details.localPosition);
+    }
+  }
+
+  void _handlePanUpdate(DragUpdateDetails details) {
+    if (activeBar == 'pen' || activeBar == 'shape' || activeBar == 'arrow') {
+      updateDrawing(details.localPosition);
+    }
+  }
+
+  void _handlePanEnd(DragEndDetails details) {
+    if (activeBar == 'pen' || activeBar == 'shape' || activeBar == 'arrow') {
+      stopDrawing();
+    }
+  }
+
+  void _showTextDialog(Offset position) {
+    TextEditingController controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  "Add Text to Canvas",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Theme.of(context).primaryColor.withOpacity(0.2),
+                    ),
+                  ),
+                  child: TextField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      hintText: "Type your text here...",
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      border: InputBorder.none,
+                    ),
+                    style: TextStyle(fontSize: 16),
+                    maxLines: 3,
+                  ),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    if (controller.text.isNotEmpty) {
+                      addText(position, controller.text);
+                    }
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    "Place Your Text",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showTextOptions(TextData textData) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildOptionButton(
+                  icon: Icons.edit,
+                  label: "Edit",
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showEditTextDialog(textData);
+                  },
+                ),
+                SizedBox(width: 16),
+                _buildOptionButton(
+                  icon: Icons.delete,
+                  label: "Delete",
+                  isDestructive: true,
+                  onTap: () {
+                    setState(() {
+                      texts.remove(textData);
+                    });
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildOptionButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    bool isDestructive = false,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color:
+                    isDestructive ? Colors.red : Theme.of(context).primaryColor,
+              ),
+              SizedBox(width: 8),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: isDestructive
+                      ? Colors.red
+                      : Theme.of(context).primaryColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showEditTextDialog(TextData textData) {
+    TextEditingController controller =
+        TextEditingController(text: textData.text);
+    showDialog(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          elevation: 8,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  "Edit Text",
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: Theme.of(context).primaryColor.withOpacity(0.2),
+                    ),
+                  ),
+                  child: TextField(
+                    controller: controller,
+                    decoration: InputDecoration(
+                      hintText: "Type your text here...",
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                      border: InputBorder.none,
+                    ),
+                    style: TextStyle(fontSize: 16),
+                    maxLines: 3,
+                  ),
+                ),
+                SizedBox(height: 20),
+                ElevatedButton(
+                  onPressed: () {
+                    if (controller.text.isNotEmpty) {
+                      setState(() {
+                        textData.text = controller.text;
+                      });
+                    }
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).primaryColor,
+                    padding: EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: Text(
+                    "Update Text",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+// Main App
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primaryColor: Color(0xFF2C3E50),
+        scaffoldBackgroundColor: Color(0xFFF5F6FA),
+      ),
+      home: DrawingBoardUI(),
+    );
+  }
+}
