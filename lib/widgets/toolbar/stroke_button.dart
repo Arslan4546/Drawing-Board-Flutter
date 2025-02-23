@@ -4,7 +4,7 @@ class StrokeButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  StrokeButton({required this.label, required this.onTap});
+  const StrokeButton({super.key, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class StrokeButton extends StatelessWidget {
         child: Center(
           child: Text(
             label,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.black,
               fontSize: 16,
               fontWeight: FontWeight.bold,

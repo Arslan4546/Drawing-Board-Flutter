@@ -4,7 +4,7 @@ class ColorButton extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  ColorButton({required this.color, required this.onTap});
+  const ColorButton({required this.color, required this.onTap});
 
   @override
   Widget build(BuildContext context) {

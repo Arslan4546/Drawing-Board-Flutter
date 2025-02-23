@@ -4,7 +4,7 @@ class RedoButton extends StatelessWidget {
   final VoidCallback onTap;
   final bool isEnabled;
 
-  RedoButton({required this.onTap, this.isEnabled = true});
+  const RedoButton({super.key, required this.onTap, this.isEnabled = true});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class RedoButton extends StatelessWidget {
               size: 30,
               color: isEnabled ? Colors.black : Colors.grey,
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               "Redo",
               style: TextStyle(

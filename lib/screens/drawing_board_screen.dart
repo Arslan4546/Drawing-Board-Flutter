@@ -384,8 +384,9 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
           ),
         ),
         backgroundColor: isDarkMode
-            ? Color(0xFF1A2526)
-            : Color(0xFF4A90E2), // Bright blue in light, deep teal in dark
+            ? const Color(0xFF1A2526)
+            : const Color(
+                0xFF4A90E2), // Bright blue in light, deep teal in dark
         elevation: 4,
         actions: [
           IconButton(
@@ -427,8 +428,9 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
           width: toolbarWidth,
           height: constraints.maxHeight,
           color: isDarkMode
-              ? Color(0xFF1A2526)
-              : Color(0xFFF7F9FC), // Light grey in light, deep grey in dark
+              ? const Color(0xFF1A2526)
+              : const Color(
+                  0xFFF7F9FC), // Light grey in light, deep grey in dark
           child: _buildToolbar(false, constraints),
         ),
         Expanded(
@@ -444,8 +446,9 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
         Container(
           width: toolbarWidth,
           color: isDarkMode
-              ? Color(0xFF1A2526)
-              : Color(0xFFF7F9FC), // Light grey in light, deep grey in dark
+              ? const Color(0xFF1A2526)
+              : const Color(
+                  0xFFF7F9FC), // Light grey in light, deep grey in dark
           child: _buildToolbar(false, constraints),
         ),
         Expanded(
@@ -488,10 +491,10 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
     final bool isActive = activeBar == value;
     final Color iconColor = isDarkMode
         ? (isActive ? Colors.white : Colors.white70)
-        : (isActive ? Color(0xFF4A90E2) : Colors.black87);
+        : (isActive ? const Color(0xFF4A90E2) : Colors.black87);
     final Color textColor = isDarkMode
         ? (isActive ? Colors.white : Colors.white70)
-        : (isActive ? Color(0xFF4A90E2) : Colors.black87);
+        : (isActive ? const Color(0xFF4A90E2) : Colors.black87);
 
     return GestureDetector(
       onTap: () => value == 'clear' ? clearDrawing() : toggleBar(value),
@@ -501,8 +504,8 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
         decoration: BoxDecoration(
           color: isActive
               ? (isDarkMode
-                  ? Color(0xFF2D4A52)
-                  : Color(0xFF4A90E2).withOpacity(0.2))
+                  ? const Color(0xFF2D4A52)
+                  : const Color(0xFF4A90E2).withOpacity(0.2))
               : Colors.transparent,
           border: Border(
             bottom: BorderSide(
@@ -538,7 +541,7 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
   Widget _buildToolOptions(
       String type, BoxConstraints constraints, bool isPortrait) {
     if (!['stroke', 'color', 'shape'].contains(type)) {
-      return SizedBox.shrink();
+      return const SizedBox.shrink();
     }
 
     return Positioned(
@@ -548,18 +551,18 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
       child: Container(
         height: 60,
         color: isDarkMode
-            ? Color(0xFF1A2526).withOpacity(0.1)
-            : Color(0xFFF7F9FC), // Flat background, no shadow
+            ? const Color(0xFF1A2526).withOpacity(0.1)
+            : const Color(0xFFF7F9FC), // Flat background, no shadow
         child: Center(
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: _buildOptionsForType(type).map((widget) {
                   return Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
                     child: widget,
                   );
                 }).toList(),
@@ -670,7 +673,7 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
                 });
               },
               child: Container(
-                padding: EdgeInsets.all(8),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: textData.isDragging || textData.isSelected
                       ? (isDarkMode
@@ -689,7 +692,7 @@ class _DrawingBoardUIState extends State<DrawingBoardUI> {
               ),
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }

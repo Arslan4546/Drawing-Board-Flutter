@@ -5,7 +5,8 @@ class ToolbarButton extends StatelessWidget {
   final String label;
   final VoidCallback? onTap;
 
-  ToolbarButton({required this.icon, required this.label, this.onTap});
+  const ToolbarButton(
+      {super.key, required this.icon, required this.label, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class ToolbarButton extends StatelessWidget {
         child: Column(
           children: [
             Icon(icon, size: 30, color: Colors.black),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),

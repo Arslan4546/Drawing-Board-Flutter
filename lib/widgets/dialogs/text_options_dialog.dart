@@ -10,7 +10,7 @@ void showTextOptions(BuildContext context, TextData textData,
         elevation: 0,
         backgroundColor: Colors.transparent,
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
@@ -33,7 +33,7 @@ void showTextOptions(BuildContext context, TextData textData,
                   showEditTextDialog(textData);
                 },
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               _buildOptionButton(
                 icon: Icons.delete,
                 label: "Delete",
@@ -66,7 +66,7 @@ Widget _buildOptionButton({
       onTap: onTap,
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -77,7 +77,7 @@ Widget _buildOptionButton({
                   ? Colors.red
                   : Colors.blue, // Adjust color as needed
             ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
             Text(
               label,
               style: TextStyle(

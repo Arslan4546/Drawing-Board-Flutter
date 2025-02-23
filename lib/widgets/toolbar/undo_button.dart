@@ -4,7 +4,7 @@ class UndoButton extends StatelessWidget {
   final VoidCallback onTap;
   final bool isEnabled;
 
-  UndoButton({required this.onTap, this.isEnabled = true});
+  const UndoButton({super.key, required this.onTap, this.isEnabled = true});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class UndoButton extends StatelessWidget {
               size: 30,
               color: isEnabled ? Colors.black : Colors.grey,
             ),
-            SizedBox(height: 4),
+            const SizedBox(height: 4),
             Text(
               "Undo",
               style: TextStyle(

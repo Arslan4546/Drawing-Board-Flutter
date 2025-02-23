@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'stroke.dart';
 import 'text_data.dart';
 import 'arrow_data.dart';

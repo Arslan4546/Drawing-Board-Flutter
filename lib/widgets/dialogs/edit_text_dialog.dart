@@ -16,7 +16,7 @@ void showEditTextDialog(
             ? Colors.white
             : Colors.grey[900],
         child: Container(
-          padding: EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
@@ -42,7 +42,7 @@ void showEditTextDialog(
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextField(
                 controller: controller,
                 decoration: InputDecoration(
@@ -61,7 +61,7 @@ void showEditTextDialog(
                 ),
                 maxLines: 3,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   if (controller.text.isNotEmpty) {
@@ -73,12 +73,12 @@ void showEditTextDialog(
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
-                  padding: EdgeInsets.symmetric(vertical: 12),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   "Update Text",
                   style: TextStyle(
                     fontSize: 16,

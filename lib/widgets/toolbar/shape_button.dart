@@ -5,7 +5,11 @@ class ShapeButton extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  ShapeButton({required this.icon, required this.label, required this.onTap});
+  const ShapeButton(
+      {super.key,
+      required this.icon,
+      required this.label,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
